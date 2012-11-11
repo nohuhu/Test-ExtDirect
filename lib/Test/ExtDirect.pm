@@ -7,6 +7,7 @@ use warnings;
 use Exporter;
 
 use Test::More;
+use Carp;
 use Clone ();
 
 use RPC::ExtDirect::Server;
@@ -61,7 +62,7 @@ our @EXPORT = qw(
     poll_extdirect_ok
 );
 
-our $VERSION = '0.2';
+our $VERSION = '0.21';
 $VERSION = eval $VERSION;
 
 our ($SERVER_PID, $SERVER_PORT);
@@ -76,7 +77,11 @@ sub start_server {
 
     return $SERVER_PORT if $SERVER_PORT;
 
-    my $server = RPC::ExtDirect::Server->new(%params);
+    my $class = delete $params{server_class} || 'RPC::ExtDirect::Server';
+
+    eval "require $class" or croak "Can't load package $class";
+
+    my $server = $class->new(%params);
     my $port   = $SERVER_PORT = $server->port;
 
     if ( my $pid = $SERVER_PID = fork ) {
@@ -235,7 +240,9 @@ sub poll_extdirect_ok {
 sub _get_client {
     my (%params) = @_;
 
-    my $class = 'RPC::ExtDirect::Client';
+    my $class = delete $params{client_class} || 'RPC::ExtDirect::Client';
+
+    eval "require $class" or croak "Can't load package $class";
 
     $params{static_dir} ||= '/tmp';
 
@@ -283,10 +290,11 @@ With default imports:
 
     use Test::ExtDirect;
     
-    my $data = call_extdirect(action  => 'Action',
-                              method  => 'Method',
-                              arg     => { foo => 'bar' },
-                              cookies => { bar => 'baz' });
+    my $data = call_extdirect(client_class => 'My::ExtDirect::Client',
+                              action       => 'Action',
+                              method       => 'Method',
+                              arg          => { foo => 'bar' },
+                              cookies      => { bar => 'baz' });
     
     $data = submit_extdirect(action => 'Action',
                              method => 'form_handler',
@@ -325,8 +333,18 @@ Starts a new RPC::ExtDirect::Server instance. It is not necessary to call
 this function directly, call/submit/poll will launch a new server if it's
 not done yet.
 
-Parameters are accepted as hash and passed on to server constructor.
+=over 8
+
+=item server_class
+
+Specifies server class to be used instead of default RPC::ExtDirect::Server.
+
+=item other
+
+Other parameters are accepted as hash and passed on to server constructor.
 See L<RPC::ExtDirect::Server> for details.
+
+=back
 
 Returns port number that server listens on.
 
@@ -341,6 +359,10 @@ finished.
 Call Ext.Direct remoting method. Parameters:
 
 =over 8
+
+=item client_class
+
+Client class to use instead of default RPC::ExtDirect::Client.
 
 =item action
 
@@ -370,7 +392,7 @@ Submit an Ext.Direct form request. Takes the following parameters:
 
 =over 8
 
-=item action, method, arg
+=item client_class, action, method, arg
 
 The same as with L</call_extdirect>, see above.
 
@@ -378,13 +400,31 @@ The same as with L</call_extdirect>, see above.
 
 Arrayref of file paths to upload with that request.
 
+=item ...
+
+Any other parameters are passed to client constructor. See
+L<RPC::ExtDirect::Client> for details.
+
 =back
 
 Returns the data passed on by Method.
 
 =item poll_extdirect
 
-Poll the server for events. Does not take any parameters.
+Poll the server for events. Takes the following parameters:
+
+=over 8
+
+=item client_class
+
+The same as with L</call_extdirect>, see above.
+
+=item ...
+
+Any other parameters are passed to client constructor. See
+L<RPC::ExtDirect::Client> for details.
+
+=back
 
 Returns arrayref with event data. When there are no events ready (if you
 test this case), a single __NONE__ event will be returned. This is to avoid
@@ -432,7 +472,7 @@ Points to poll_extdirect.
 
 For each of call*, submit* and poll*, there is similarly named *_ok
 function that wraps its respective namesake in eval(), passing or
-failing additional test depending $@.
+failing additional test depending on eval() success.
 
 =head1 DEPENDENCIES
 
