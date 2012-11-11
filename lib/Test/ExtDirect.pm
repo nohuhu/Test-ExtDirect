@@ -61,7 +61,7 @@ our @EXPORT = qw(
     poll_extdirect_ok
 );
 
-our $VERSION = '0.01';
+our $VERSION = '0.2';
 $VERSION = eval $VERSION;
 
 our ($SERVER_PID, $SERVER_PORT);
@@ -134,7 +134,7 @@ sub call_extdirect {
 
     my $client = _get_client(%params);
     my $data   = $client->call(action => $action, method => $method,
-                               arg    => $arg);
+                               arg    => $arg,    %params);
 
     return $data;
 }
@@ -171,7 +171,8 @@ sub submit_extdirect {
 
     my $client = _get_client(%params);
     my $data   = $client->submit(action => $action, method => $method,
-                                 arg    => $arg,    upload => $upload);
+                                 arg    => $arg,    upload => $upload,
+                                 %params);
 
     return $data;
 }
@@ -202,7 +203,7 @@ sub poll_extdirect {
     my (%params) = @_;
 
     my $client = _get_client(%params);
-    my $data   = $client->poll();
+    my $data   = $client->poll(%params);
 
     return $data;
 }
@@ -282,9 +283,10 @@ With default imports:
 
     use Test::ExtDirect;
     
-    my $data = call_extdirect(action => 'Action',
-                              method => 'Method',
-                              arg    => { foo => 'bar' });
+    my $data = call_extdirect(action  => 'Action',
+                              method  => 'Method',
+                              arg     => { foo => 'bar' },
+                              cookies => { bar => 'baz' });
     
     $data = submit_extdirect(action => 'Action',
                              method => 'form_handler',

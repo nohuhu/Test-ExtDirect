@@ -5,4 +5,5 @@ README
 lib/Test/ExtDirect.pm
 t/01_exports.t
 t/02_extdirect.t
+t/03_cookies.t
 t/pod.t

@@ -1,3 +1,7 @@
+0.2   Sat Nov 10 20:26:51 2012
+    - Updated to support cookies handling in RPC::ExtDirect::Client
+    - Bumped RPC::ExtDirect::Client dependency to 0.2
+
 0.01  Thu Aug  2 21:27:07 2012
-	- initial CPAN release
+	- Initial CPAN release
 
