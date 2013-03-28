@@ -8,3 +8,6 @@ t/02_extdirect.t
 t/03_cookies.t
 t/04_classes.t
 t/pod.t
+t/lib/RPC/ExtDirect/Client/Foo.pm
+t/lib/RPC/ExtDirect/Server/Foo.pm
+

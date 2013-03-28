@@ -9,12 +9,13 @@ use_ok 'Test::ExtDirect';
 my @default_exports = qw(
     start_server stop_server call_extdirect call_extdirect_ok
     submit_extdirect submit_extdirect_ok poll_extdirect poll_extdirect_ok
+    get_extdirect_api
 );
 
 my @all_exports = qw(
     start_server stop_server call_extdirect call_extdirect_ok
     submit_extdirect submit_extdirect_ok poll_extdirect poll_extdirect_ok
-    call submit poll call_ok submit_ok poll_ok
+    call submit poll call_ok submit_ok poll_ok get_extdirect_api
 );
 
 my %shortcuts = (

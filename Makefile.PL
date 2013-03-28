@@ -1,4 +1,3 @@
-use 5.014;
 use ExtUtils::MakeMaker;
 
 my $MM_VERSION = $ExtUtils::MakeMaker::VERSION;
@@ -11,7 +10,7 @@ WriteMakefile(
         'Clone'                  => 0,
         'Test::More'             => 0,
         'RPC::ExtDirect::Server' => 0,
-        'RPC::ExtDirect::Client' => '0.2',
+        'RPC::ExtDirect::Client' => '0.21',
     },
 
     ABSTRACT => 'An easy and convenient way to test Ext.Direct classes',

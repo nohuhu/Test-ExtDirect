@@ -1,3 +1,10 @@
+0.23  Wed Mar 27 22:40:31 2013
+    - Added get_extdirect_api subroutine. Bumped RPC::ExtDirect::Client
+      version dependency to 0.21.
+
+0.22  Sat Nov 10 23:25:14 2012
+    - Forgot to include two test classes in MANIFEST. No code changes.
+
 0.21  Sat Nov 10 23:03:29 2012
     - It is now possible to specify custom server and client classes
       instead of default RPC::ExtDirect::Server and RPC::ExtDirect::Client,

@@ -34,9 +34,24 @@ sub handle_poll : ExtDirect(pollHandler) {
 
 package main;
 
-use Test::More tests => 7;
+use Test::More tests => 12;
 
 use_ok 'Test::ExtDirect';
+
+my $api = eval { get_extdirect_api() };
+
+is $@, '', "get_extdirect_api didn't die";
+
+my @actions = $api->actions;
+
+is +@actions, 1, "get_extdirect_api numer of actions";
+
+my @methods = map { $actions[0]->method($_) } qw/ echo handle_form /;
+
+is +@methods, 2, "get_extdirect_api number of methods";
+
+ok $methods[0]->is_ordered, "get_extdirect_api method echo";
+ok $methods[1]->is_formhandler, "get_extdirect_api method handle_form";
 
 my $echo_data = [ 'foo', [ 'foo', 'bar' ], { foo => 'bar' } ];
 

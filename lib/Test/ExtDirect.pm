@@ -19,6 +19,8 @@ our @EXPORT_OK = qw(
     start_server
     stop_server
 
+    get_extdirect_api
+
     call_extdirect
     submit_extdirect
     poll_extdirect
@@ -40,13 +42,14 @@ our %EXPORT_TAGS = (
     DEFAULT => [qw/
         start_server stop_server call_extdirect call_extdirect_ok
         submit_extdirect submit_extdirect_ok poll_extdirect
-        poll_extdirect_ok
+        poll_extdirect_ok get_extdirect_api
     /],
 
     all => [qw/
         start_server stop_server call_extdirect call_extdirect_ok
         submit_extdirect submit_extdirect_ok poll_extdirect
         poll_extdirect_ok call submit poll call_ok submit_ok poll_ok
+        get_extdirect_api
     /],
 );
 
@@ -54,6 +57,7 @@ our @EXPORT = qw(
     start_server
     stop_server
 
+    get_extdirect_api
     call_extdirect
     call_extdirect_ok
     submit_extdirect
@@ -62,7 +66,7 @@ our @EXPORT = qw(
     poll_extdirect_ok
 );
 
-our $VERSION = '0.21';
+our $VERSION = '0.23';
 $VERSION = eval $VERSION;
 
 our ($SERVER_PID, $SERVER_PORT);
@@ -122,6 +126,19 @@ sub stop_server {
     kill 9, $pid if defined $pid;
 
     $SERVER_PID = $SERVER_PORT = undef;
+}
+
+### PUBLIC PACKAGE SUBROUTINE (EXPORT) ###
+#
+# Return Ext.Direct API published by the server as RPC::ExtDirect::Client::API
+# object
+#
+
+sub get_extdirect_api {
+    my $client = _get_client();
+    my $api    = $client->api();
+
+    return $api;
 }
 
 ### PUBLIC PACKAGE SUBROUTINE (EXPORT) ###
@@ -353,6 +370,11 @@ Returns port number that server listens on.
 Stops the server instance used for testing. Again it's not necessary to call
 this function explicitly, the server will be shut down when all tests are
 finished.
+
+=item get_extdirect_api
+
+Returns Ext.Direct API published by the server as
+L<RPC::ExtDirect::Client::API> object.
 
 =item call_extdirect(%params)
 
