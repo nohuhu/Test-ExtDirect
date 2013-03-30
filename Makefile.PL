@@ -10,7 +10,7 @@ WriteMakefile(
         'Clone'                  => 0,
         'Test::More'             => 0,
         'RPC::ExtDirect::Server' => 0,
-        'RPC::ExtDirect::Client' => '0.21',
+        'RPC::ExtDirect::Client' => '0.22',
     },
 
     ABSTRACT => 'An easy and convenient way to test Ext.Direct classes',

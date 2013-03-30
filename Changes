@@ -1,3 +1,6 @@
+0.24  Wed Mar 29 18:46:33 2013
+    - Bumped RPC::ExtDirect::Client dependency to 0.22; no code changes.
+
 0.23  Wed Mar 27 22:40:31 2013
     - Added get_extdirect_api subroutine. Bumped RPC::ExtDirect::Client
       version dependency to 0.21.
