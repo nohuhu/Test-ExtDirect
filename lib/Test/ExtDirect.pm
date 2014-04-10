@@ -1,6 +1,5 @@
 package Test::ExtDirect;
 
-use 5.006000;
 use strict;
 use warnings;
 
@@ -11,6 +10,7 @@ use Carp;
 use Clone ();
 
 use RPC::ExtDirect::Server;
+use RPC::ExtDirect::Server::Util;
 use RPC::ExtDirect::Client;
 
 our @ISA = qw(Exporter);
@@ -66,67 +66,23 @@ our @EXPORT = qw(
     poll_extdirect_ok
 );
 
-our $VERSION = '0.24';
+our $VERSION = '0.30';
 $VERSION = eval $VERSION;
-
-our ($SERVER_PID, $SERVER_PORT);
 
 ### PUBLIC PACKAGE SUBROUTINE (EXPORT) ###
 #
-# Starts testing HTTP server and returns the port it listens on
+# Starts testing HTTP server and returns the host and port
+# the server is listening on.
 #
 
-sub start_server {
-    my (%params) = @_;
-
-    return $SERVER_PORT if $SERVER_PORT;
-
-    my $class = delete $params{server_class} || 'RPC::ExtDirect::Server';
-
-    eval "require $class" or croak "Can't load package $class";
-
-    my $server = $class->new(%params);
-    my $port   = $SERVER_PORT = $server->port;
-
-    if ( my $pid = $SERVER_PID = fork ) {
-        local $SIG{CHLD} = sub { waitpid $pid, 0 };
-
-        # Give child some time to start
-        select undef, undef, undef, 0.1;
-
-        return $port;
-    }
-    elsif ( defined $pid && $pid == 0 ) {
-
-        # Trap last breaths to avoid cluttering the screen
-        local $SIG{__DIE__} = sub {};
-
-        $server->run();
-
-        exit 0;
-    }
-    else {
-        die "Can't fork: $!";
-    };
-
-    return;     # Just in case
-}
+*start_server = *RPC::ExtDirect::Server::Util::start_server;
 
 ### PUBLIC PACKAGE SUBROUTINE (EXPORT) ###
 #
 # Stops the running HTTP server instance
 #
 
-sub stop_server {
-    my $pid = shift || $SERVER_PID;
-
-    # This is a bit kludgy but somehow if I use any other signal
-    # the server kid has last opportunity to cry for help.
-    # Which we don't want.
-    kill 9, $pid if defined $pid;
-
-    $SERVER_PID = $SERVER_PORT = undef;
-}
+*stop_server = *RPC::ExtDirect::Server::Util::stop_server;
 
 ### PUBLIC PACKAGE SUBROUTINE (EXPORT) ###
 #
@@ -135,8 +91,13 @@ sub stop_server {
 #
 
 sub get_extdirect_api {
-    my $client = _get_client();
-    my $api    = $client->api();
+    my (%params) = @_;
+    
+    # We assume that users want remoting API by default
+    my $api_type = delete $params{type} || 'remoting';
+    
+    my $client = _get_client(%params);
+    my $api    = $client->get_api($api_type);
 
     return $api;
 }
@@ -150,13 +111,53 @@ sub get_extdirect_api {
 sub call_extdirect {
     my (%params) = @_;
 
-    my $action = delete $params{action};
-    my $method = delete $params{method};
-    my $arg    = Clone::clone( delete $params{arg} );
+    my $action_name = delete $params{action};
+    my $method_name = delete $params{method};
+    my $arg         = Clone::clone( delete $params{arg} );
 
     my $client = _get_client(%params);
-    my $data   = $client->call(action => $action, method => $method,
-                               arg    => $arg,    %params);
+    
+    # This is a backward compatibility measure; until RPC::ExtDirect 3.0
+    # it wasn't required to pass any arg to the client when calling
+    # a method with ordered parameters. It is now an error to do so, and
+    # for a good reason: starting with version 3.0, it is possible to
+    # define a method with no strict argument checking, which defaults to
+    # using named parameters. To avoid possible problems stemming from this
+    # change, we strictly check the existence of arguments for both ordered
+    # and named conventions in RPC::ExtDirect::Client.
+    #
+    # Having said that, I don't think that this kind of strict checking is
+    # beneficial for Test::ExtDirect since the test code that calls
+    # Ext.Direct methods is probably focusing on other aspects than strict
+    # argument checking that happens in the transport layer.
+    #
+    # As a side benefit, we also get an early warning if something went awry
+    # and we can't even get a reference to the Action or Method in question.
+    
+    if ( !$arg ) {
+        my $api = $client->get_api('remoting');
+        
+        croak "Can't get remoting API from the client" unless $api;
+    
+        my $method = $api->get_method_by_name($action_name, $method_name);
+        
+        croak "Can't resolve ${action_name}->${method_name} method"
+            unless $method;
+        
+        if ( $method->is_ordered ) {
+            $arg = [];
+        }
+        elsif ( $method->is_named ) {
+            $arg = {};
+        }
+    }
+    
+    my $data = $client->call(
+        action => $action_name,
+        method => $method_name,
+        arg    => $arg,
+        %params,
+    );
 
     return $data;
 }
@@ -263,10 +264,9 @@ sub _get_client {
 
     $params{static_dir} ||= '/tmp';
 
-    my $host = $params{host} || '127.0.0.1';
-    my $port = $params{port} || start_server(%params);
+    my ($host, $port) = maybe_start_server(%params);
 
-    my $client = $class->new(host => $host, port => $port);
+    my $client = $class->new(host => $host, port => $port, %params);
 
     return $client;
 }
@@ -288,8 +288,6 @@ sub _pass_or_fail {
         pass "$calling_sub successful";
     };
 }
-
-END { stop_server }
 
 1;
 
