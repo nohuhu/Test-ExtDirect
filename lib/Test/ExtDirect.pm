@@ -16,6 +16,7 @@ use RPC::ExtDirect::Client;
 our @ISA = qw(Exporter);
 
 our @EXPORT_OK = qw(
+    maybe_start_server
     start_server
     stop_server
 
@@ -42,18 +43,19 @@ our %EXPORT_TAGS = (
     DEFAULT => [qw/
         start_server stop_server call_extdirect call_extdirect_ok
         submit_extdirect submit_extdirect_ok poll_extdirect
-        poll_extdirect_ok get_extdirect_api
+        poll_extdirect_ok get_extdirect_api maybe_start_server
     /],
 
     all => [qw/
         start_server stop_server call_extdirect call_extdirect_ok
         submit_extdirect submit_extdirect_ok poll_extdirect
         poll_extdirect_ok call submit poll call_ok submit_ok poll_ok
-        get_extdirect_api
+        get_extdirect_api maybe_start_server
     /],
 );
 
 our @EXPORT = qw(
+    maybe_start_server
     start_server
     stop_server
 
@@ -66,8 +68,7 @@ our @EXPORT = qw(
     poll_extdirect_ok
 );
 
-our $VERSION = '0.30';
-$VERSION = eval $VERSION;
+our $VERSION = '1.0';
 
 ### PUBLIC PACKAGE SUBROUTINE (EXPORT) ###
 #
@@ -83,6 +84,13 @@ $VERSION = eval $VERSION;
 #
 
 *stop_server = *RPC::ExtDirect::Server::Util::stop_server;
+
+### PUBLIC PACKAGE SUBROUTINE (EXPORT) ###
+#
+# Potentially starts an instance of a Server.
+#
+
+*maybe_start_server = *RPC::ExtDirect::Server::Util::maybe_start_server;
 
 ### PUBLIC PACKAGE SUBROUTINE (EXPORT) ###
 #
@@ -170,9 +178,11 @@ sub call_extdirect {
 #
 
 sub call_extdirect_ok {
+    local $@;
+    
     my $result = eval { call_extdirect(@_) };
 
-    _pass_or_fail($@);
+    _pass_or_fail(my $err = $@);
 
     return $result;
 }
@@ -208,9 +218,11 @@ sub submit_extdirect {
 #
 
 sub submit_extdirect_ok {
+    local $@;
+    
     my $result = eval { submit_extdirect(@_) };
 
-    _pass_or_fail($@);
+    _pass_or_fail(my $err = $@);
 
     return $result;
 }
@@ -239,9 +251,11 @@ sub poll_extdirect {
 #
 
 sub poll_extdirect_ok {
+    local $@;
+    
     my $result = eval { poll_extdirect(@_) };
 
-    _pass_or_fail($@);
+    _pass_or_fail(my $err = $@);
 
     return $result;
 }
