@@ -9,11 +9,11 @@ WriteMakefile(
     PREREQ_PM         => {
         'Clone'                  => 0,
         'Test::More'             => 0,
-        'RPC::ExtDirect::Server' => 0,
-        'RPC::ExtDirect::Client' => '0.22',
+        'RPC::ExtDirect::Server' => '1.0',
+        'RPC::ExtDirect::Client' => '1.0',
     },
 
-    ABSTRACT => 'An easy and convenient way to test Ext.Direct classes',
+    ABSTRACT => 'An easy and convenient way to test Ext.Direct code',
     AUTHOR   => 'Alex Tokarev <tokarev@cpan.org>',
     LICENSE  => 'perl',
 
