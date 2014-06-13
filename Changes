@@ -1,6 +1,9 @@
-1.00  Wed Jun 11 21:53:08 2014
-    - Released as version 1.0 along with the major refactor of the whole
+1.00  Thu Jun 12 23:20:54 2014
+    - Released as version 1.00 along with the major refactor of the whole
       RPC::ExtDirect suite of modules.
+    - Added lots of documentation
+    - Dropped Clone dependency
+    - Tested and deemed compatible with Perl 5.6.2
 
 0.24  Wed Mar 29 18:46:33 2013
     - Bumped RPC::ExtDirect::Client dependency to 0.22; no code changes.
