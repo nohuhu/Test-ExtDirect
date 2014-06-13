@@ -3,11 +3,11 @@ package Test::ExtDirect;
 use strict;
 use warnings;
 
+use Carp;
+use Data::Dumper; # for cloning
 use Exporter;
 
 use Test::More;
-use Carp;
-use Clone ();
 
 use RPC::ExtDirect::Server;
 use RPC::ExtDirect::Server::Util;
@@ -68,7 +68,7 @@ our @EXPORT = qw(
     poll_extdirect_ok
 );
 
-our $VERSION = '1.0';
+our $VERSION = '1.00';
 
 ### PUBLIC PACKAGE SUBROUTINE (EXPORT) ###
 #
@@ -121,7 +121,7 @@ sub call_extdirect {
 
     my $action_name = delete $params{action};
     my $method_name = delete $params{method};
-    my $arg         = Clone::clone( delete $params{arg} );
+    my $arg         = _clone( delete $params{arg} );
 
     my $client = _get_client(%params);
     
@@ -199,8 +199,8 @@ sub submit_extdirect {
 
     my $action = delete $params{action};
     my $method = delete $params{method};
-    my $arg    = Clone::clone( delete $params{arg}    );
-    my $upload = Clone::clone( delete $params{upload} );
+    my $arg    = _clone( delete $params{arg}    );
+    my $upload = _clone( delete $params{upload} );
 
     my $client = _get_client(%params);
     my $data   = $client->submit(action => $action, method => $method,
@@ -301,6 +301,25 @@ sub _pass_or_fail {
     else {
         pass "$calling_sub successful";
     };
+}
+
+### PRIVATE PACKAGE SUBROUTINE ###
+#
+# Create a deep copy (clone) of the passed data structure.
+# We're not much concerned with performance here, and this
+# custom implementation allows to avoid a depedency like
+# Clone or Storable, which is overkill here.
+#
+
+sub _clone {
+    my $data = shift;
+    
+    # Faster than calling instance methods
+    local $Data::Dumper::Purity   = 1;
+    local $Data::Dumper::Terse    = 1;
+    local $Data::Dumper::Deepcopy = 1;
+    
+    return eval Dumper($data);
 }
 
 1;
