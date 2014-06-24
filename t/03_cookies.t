@@ -70,6 +70,7 @@ is_deeply $data, $expected_data, "Ordered"
 $data = submit_extdirect(
     action  => 'test',
     method  => 'form',
+    arg     => {},
     cookies => $expected_data,
 );
 
