@@ -1,3 +1,7 @@
+use 5.006000;
+use strict;
+use warnings;
+
 use ExtUtils::MakeMaker;
 
 # Add the `devtest` target to run regression and POD tests in one go
@@ -21,25 +25,37 @@ END
 }
 
 my $MM_VERSION = $ExtUtils::MakeMaker::VERSION;
+my $github_uri = 'https://github.com/nohuhu/Test-ExtDirect';
 
 WriteMakefile(
     NAME              => 'Test::ExtDirect',
     VERSION_FROM      => 'lib/Test/ExtDirect.pm',
     
-    ($MM_VERSION >= 6.5503
-        ? ( BUILD_REQUIRES => {
-                'Test::More' => 0,
+    ($MM_VERSION >= 6.64
+        ? (
+            TEST_REQUIRES => {
+                'Test::More' => '0.82', # for explain()
             },
-            PREREQ_PM      => {
-                'RPC::ExtDirect::Server' => '1.00',
-                'RPC::ExtDirect::Client' => '1.00',
+            PREREQ_PM     => {
+                'RPC::ExtDirect::Server' => '1.01',
+                'RPC::ExtDirect::Client' => '1.02',
             },
         )
-        : ( PREREQ_PM => {
-                'Test::More'             => 0,
-                'RPC::ExtDirect::Server' => '1.00',
-                'RPC::ExtDirect::Client' => '1.00',
-            },
+        : ($MM_VERSION >= 6.5503
+            ? ( BUILD_REQUIRES => {
+                    'Test::More' => '0.82',
+                },
+                PREREQ_PM      => {
+                    'RPC::ExtDirect::Server' => '1.01',
+                    'RPC::ExtDirect::Client' => '1.02',
+                },
+            )
+            : ( PREREQ_PM => {
+                    'Test::More'             => '0.82',
+                    'RPC::ExtDirect::Server' => '1.01',
+                    'RPC::ExtDirect::Client' => '1.02',
+                },
+            ),
         ),
     ),
 
@@ -47,11 +63,16 @@ WriteMakefile(
     AUTHOR   => 'Alex Tokarev <tokarev@cpan.org>',
     LICENSE  => 'perl',
 
+    ($MM_VERSION >= 6.48
+        ? ( MIN_PERL_VERSION => 5.006000 )
+        : ()
+    ),
+
     ($MM_VERSION >= 6.46
         ? ( META_MERGE => {
                 resources => {
-                    bugtracker => 'http://github.com/nohuhu/Test-ExtDirect/issues',
-                    repository => 'http://github.com/nohuhu/Test-ExtDirect',
+                    bugtracker => "$github_uri/issues",
+                    repository => $github_uri,
                 },
             },
         )
