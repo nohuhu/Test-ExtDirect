@@ -1,3 +1,6 @@
+1.01  Mon Jun 23 17:57:48 2014
+    - Fixed the tests failing with updated Client
+
 1.00  Thu Jun 12 23:20:54 2014
     - Released as version 1.00 along with the major refactor of the whole
       RPC::ExtDirect suite of modules.
